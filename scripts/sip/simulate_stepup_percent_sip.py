@@ -7,11 +7,12 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 INPUT_FILE = BASE_DIR / "data" / "nse" / "historical" / "csv_transformed" / "NIFTY_50.csv"
-OUTPUT_DIR = BASE_DIR / "data" / "sip" / "simulation"
+OUTPUT_DIR = BASE_DIR / "data" / "sip" / "stepup_percent" / "simulation"
 OUTPUT_PATH_DISPLAY = f"{BASE_DIR.name}/{OUTPUT_DIR.relative_to(BASE_DIR)}"
 
 INDEX_NAME = "NIFTY 50"
 SIP_AMOUNT = 10000
+STEP_UP_PERCENT = 10
 SIP_DAYS = range(1, 32)
 
 def read_prices():
@@ -52,18 +53,20 @@ def pick_trading_day(days, target):
 
 def simulate_day(months, sip_day):
     rows = []
+    first_month = min(months)
     for (year, month), days in sorted(months.items()):
         target = date(year, month, min(sip_day, calendar.monthrange(year, month)[1]))
         day, close = pick_trading_day(days, target)
-        price = float(close)
-        rows.append([day.isoformat(), close, f"{SIP_AMOUNT / price:.4f}"])
+        months_elapsed = (year - first_month[0]) * 12 + month - first_month[1]
+        amount = round(SIP_AMOUNT * (1 + STEP_UP_PERCENT / 100) ** (months_elapsed // 12), 2)
+        rows.append([day.isoformat(), close, f"{amount / float(close):.4f}", f"{amount:.2f}"])
 
     if not rows:
         raise ValueError()
 
     with open(OUTPUT_DIR / f"{sip_day}.csv", "w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["date", "price", "quantity"])
+        writer.writerow(["date", "price", "quantity", "amount"])
         writer.writerows(rows)
 
 def main():
@@ -74,7 +77,7 @@ def main():
         print(f"ERROR : {type(error).__name__}")
         return
 
-    print(f"\nSimulating SIP for {INDEX_NAME} ...\n")
+    print(f"\nSimulating step-up SIP (percent) for {INDEX_NAME} ...\n")
 
     success = 0
     for sip_day in SIP_DAYS:

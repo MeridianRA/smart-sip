@@ -4,9 +4,9 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-IN_DIR = BASE_DIR / "data" / "sip" / "simulation"
+IN_DIR = BASE_DIR / "data" / "sip" / "regular" / "simulation"
 PRICE_FILE = BASE_DIR / "data" / "nse" / "historical" / "csv_transformed" / "NIFTY_50.csv"
-OUT_FILE = BASE_DIR / "data" / "sip" / "summary.csv"
+OUT_FILE = BASE_DIR / "data" / "sip" / "regular" / "summary.csv"
 OUT_FILE_DISPLAY = str(OUT_FILE.relative_to(BASE_DIR))
 
 INDEX_NAME = "NIFTY 50"
@@ -85,7 +85,7 @@ def main():
         writer.writerow(HEADER)
         writer.writerows(rows)
 
-    print(f"{INDEX_NAME} SIP data summarized and exported successfully at {OUT_FILE_DISPLAY}")
+    print(f"{INDEX_NAME} regular SIP data summarized and exported successfully at {OUT_FILE_DISPLAY}")
 
 if __name__ == "__main__":
     main()
